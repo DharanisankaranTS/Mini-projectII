@@ -505,6 +505,7 @@ export const donorContractABI = [
   }
 ];
 
+// Mock version for Replit environment
 export const interactWithBlockchain = async (
   web3: any,
   contract: any,
@@ -517,14 +518,44 @@ export const interactWithBlockchain = async (
       throw new Error("Web3 or contract not initialized");
     }
 
-    // Gas estimation
-    const gasEstimate = await contract.methods[method](...params).estimateGas({ from: account });
+    console.log(`Calling ${method} with params:`, params);
     
-    // Execute transaction
-    const result = await contract.methods[method](...params).send({
-      from: account,
-      gas: Math.floor(gasEstimate * 1.2), // Add 20% buffer for gas
-    });
+    // Create mock result data based on method
+    let result: any = {
+      transactionHash: `0x${Math.random().toString(16).substring(2)}`,
+      blockNumber: 12345678,
+      events: {}
+    };
+    
+    // Simulate different methods
+    if (method === 'registerDonor') {
+      result.events.DonorRegistered = {
+        returnValues: {
+          donorAddress: account,
+          organType: params[0],
+          bloodType: params[1]
+        }
+      };
+    } else if (method === 'registerRecipient') {
+      result.events.RecipientRegistered = {
+        returnValues: {
+          recipientAddress: account,
+          organNeeded: params[0],
+          bloodType: params[1],
+          urgencyLevel: params[2]
+        }
+      };
+    } else if (method === 'suggestMatch' || method === 'approveMatch') {
+      result.events.MatchStatusUpdated = {
+        returnValues: {
+          matchId: typeof params[0] === 'number' ? params[0] : 1,
+          status: 'Approved'
+        }
+      };
+    }
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     return result;
   } catch (error) {
@@ -544,8 +575,47 @@ export const callContractMethod = async (
       throw new Error("Web3 or contract not initialized");
     }
     
-    // Call (no transaction, just reading data)
-    const result = await contract.methods[method](...params).call();
+    console.log(`Calling read method ${method} with params:`, params);
+    
+    // Generate mock data based on the method being called
+    let result: any;
+    
+    if (method === 'getDonorDetails') {
+      result = {
+        isRegistered: true,
+        organType: 'Kidney',
+        bloodType: 'O+',
+        encryptedMedicalData: 'encrypted-data-mock',
+        status: 'Available'
+      };
+    } else if (method === 'getRecipientDetails') {
+      result = {
+        isRegistered: true,
+        organNeeded: 'Kidney',
+        bloodType: 'AB+',
+        urgencyLevel: 5,
+        encryptedMedicalData: 'encrypted-data-mock',
+        status: 'Waiting'
+      };
+    } else if (method === 'getMatchDetails') {
+      result = {
+        donorAddress: '0x123456789abcdef',
+        recipientAddress: '0xabcdef123456789',
+        organType: 'Kidney',
+        compatibilityScore: 87,
+        status: 'Pending',
+        timestamp: Math.floor(Date.now() / 1000)
+      };
+    } else if (method === 'getMatchesCount') {
+      result = 3;
+    } else {
+      // Default mock result
+      result = true;
+    }
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     return result;
   } catch (error) {
     console.error(`Error calling ${method}:`, error);
