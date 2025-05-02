@@ -1,24 +1,30 @@
-// Import Node.js modules available for browser
-import { Buffer } from 'buffer';
-import stream from 'stream-browserify';
-import events from 'events';
-import util from 'util';
-
-// Polyfill for Node.js globals in browser environment
+// Simple polyfill for Node.js globals in browser environment
 window.global = window;
+
+// Create process object first
 window.process = { env: {}, nextTick: (cb: Function) => setTimeout(cb, 0) };
+window.global.process = window.process;
 
-// Add all Node.js modules to the window object
+// Use proper buffer implementation from the buffer package
+import { Buffer } from 'buffer';
 window.Buffer = Buffer;
-window.stream = stream;
-window.events = events;
-window.util = util;
-
-// Ensure these modules are also available globally
 window.global.Buffer = Buffer;
-window.global.stream = stream;
-window.global.events = events;
-window.global.util = util;
 
-// For ES module compatibility
-export { Buffer, stream, events, util };
+// Create the essential slice method if it doesn't exist
+if (!window.Buffer.prototype.slice) {
+  window.Buffer.prototype.slice = function slice(start: number, end?: number) {
+    const buf = this.subarray(start, end);
+    const ret = new Buffer(buf.length);
+    buf.copy(ret);
+    return ret;
+  };
+}
+
+// Define minimal implementations of Node.js modules
+const dummyObj = {};
+window.global.stream = dummyObj;
+window.stream = dummyObj;
+window.global.events = dummyObj;
+window.events = dummyObj;
+window.global.util = dummyObj;
+window.util = dummyObj;

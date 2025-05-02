@@ -1,4 +1,4 @@
-import "./lib/global-polyfill.ts";
+import "./lib/shims.js";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
