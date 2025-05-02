@@ -65,7 +65,7 @@ const Web3Context = createContext<Web3ContextProps>({
   disconnect: () => {},
 });
 
-export const useWeb3 = () => useContext(Web3Context);
+export function useWeb3() { return useContext(Web3Context); }
 
 interface Web3ProviderProps {
   children: ReactNode;
