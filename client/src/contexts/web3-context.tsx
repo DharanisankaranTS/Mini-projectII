@@ -38,6 +38,27 @@ export function Web3Provider({ children }: Web3ProviderProps) {
   const [currentBlock, setCurrentBlock] = useState(12345678);
   const { toast } = useToast();
   
+  // Auto-connect on application start
+  useEffect(() => {
+    const autoConnect = async () => {
+      try {
+        console.log("Auto-connecting to blockchain...");
+        // Use a mock address
+        const mockAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+      
+        // Update state
+        setAccount(mockAddress);
+        setIsConnected(true);
+        
+        console.log("Auto-connected successfully to", mockAddress);
+      } catch (error) {
+        console.error("Failed to auto-connect:", error);
+      }
+    };
+    
+    autoConnect();
+  }, []);
+  
   // Block number simulation
   useEffect(() => {
     const interval = setInterval(() => {

@@ -87,14 +87,18 @@ export default function ChartCard({ title, type, filter, data }: ChartCardProps)
 
       // Use provided data or default
       const chartData = data || defaultData;
-
+      
+      // Ensure labels array exists and has length
+      const validLabels = chartData?.labels || [];
+      const validValues = chartData?.values || [];
+      
       chartConfig = {
         type: 'doughnut',
         data: {
-          labels: chartData.labels,
+          labels: validLabels,
           datasets: [{
-            data: chartData.values,
-            backgroundColor: colors.slice(0, chartData.labels.length),
+            data: validValues,
+            backgroundColor: colors.slice(0, validLabels.length),
             borderWidth: 0
           }]
         },
