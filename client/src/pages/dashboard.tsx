@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import BlockchainStatus from "@/components/dashboard/blockchain-status";
+import { useWeb3 } from "@/contexts/web3-context";
+import { Button } from "@/components/ui/button";
 import StatCard from "@/components/dashboard/stat-card";
 import ChartCard from "@/components/dashboard/chart-card";
 import ActivityTable from "@/components/dashboard/activity-table";
@@ -8,6 +10,19 @@ import AiMatches from "@/components/dashboard/ai-matches";
 import SecurityCard from "@/components/dashboard/security-card";
 
 export default function Dashboard() {
+  // Get Web3 context
+  const { connect, disconnect, isConnected, account } = useWeb3();
+  
+  const handleConnectClick = async () => {
+    console.log("Direct connect button clicked");
+    try {
+      await connect();
+      console.log("Direct connect successful");
+    } catch (err) {
+      console.error("Direct connect failed:", err);
+    }
+  };
+  
   // Get system statistics
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/statistics'],
@@ -44,6 +59,26 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Direct Connect Button for Testing */}
+      <div className="mb-4">
+        <Button 
+          onClick={handleConnectClick} 
+          variant="outline"
+          className="bg-primary-100 text-primary-700 border-primary-200 hover:bg-primary-200"
+        >
+          {isConnected ? `Connected: ${account?.substring(0, 8)}...` : "Test Direct Connect"}
+        </Button>
+        {isConnected && (
+          <Button 
+            onClick={disconnect} 
+            variant="outline"
+            className="ml-4 bg-red-100 text-red-700 border-red-200 hover:bg-red-200"
+          >
+            Disconnect
+          </Button>
+        )}
+      </div>
+      
       {/* Blockchain Status */}
       <BlockchainStatus />
 
