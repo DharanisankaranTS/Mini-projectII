@@ -25,18 +25,16 @@ function Router() {
 
 function App() {
   return (
-    <Web3Provider>
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
-          <Navbar />
-          <main className="flex-grow">
-            <Router />
-          </main>
-          <Footer />
-        </div>
-        <Toaster />
-      </QueryClientProvider>
-    </Web3Provider>
+    <QueryClientProvider client={queryClient}>
+      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-800">
+        <Navbar />
+        <main className="flex-grow">
+          <Router />
+        </main>
+        <Footer />
+      </div>
+      <Toaster />
+    </QueryClientProvider>
   );
 }
 

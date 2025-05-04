@@ -6,7 +6,21 @@ import { Bell } from "lucide-react";
 
 export default function Navbar() {
   const [location] = useLocation();
+  
+  // Access the Web3 context 
   const { isConnected, connect, disconnect, account } = useWeb3();
+  console.log("Web3 context values in Navbar:", { isConnected, account });
+  
+  // Direct connect function for debugging
+  const handleConnect = async () => {
+    console.log("Connect button clicked");
+    try {
+      await connect();
+      console.log("Connect function completed successfully");
+    } catch (err) {
+      console.error("Connect function failed:", err);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm">
@@ -81,7 +95,7 @@ export default function Navbar() {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={connect}
+                  onClick={handleConnect}
                   className="flex items-center rounded-full bg-primary-600 text-white hover:bg-primary-700"
                 >
                   <svg
