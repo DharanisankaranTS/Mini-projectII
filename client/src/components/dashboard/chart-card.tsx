@@ -43,14 +43,18 @@ export default function ChartCard({ title, type, filter, data }: ChartCardProps)
 
       // Use provided data or default
       const chartData = data || defaultData;
-
+      
+      // Ensure labels array exists and has length
+      const validLabels = chartData?.labels || [];
+      const validValues = chartData?.values || [];
+      
       chartConfig = {
-        type: 'bar',
+        type: 'bar' as const,
         data: {
-          labels: chartData.labels,
+          labels: validLabels,
           datasets: [{
             label: 'Donations',
-            data: chartData.values,
+            data: validValues,
             backgroundColor: colors
           }]
         },
@@ -61,7 +65,6 @@ export default function ChartCard({ title, type, filter, data }: ChartCardProps)
             y: {
               beginAtZero: true,
               grid: {
-                drawBorder: false,
                 color: 'rgba(226, 232, 240, 0.5)'
               }
             },
@@ -93,7 +96,7 @@ export default function ChartCard({ title, type, filter, data }: ChartCardProps)
       const validValues = chartData?.values || [];
       
       chartConfig = {
-        type: 'doughnut',
+        type: 'doughnut' as const,
         data: {
           labels: validLabels,
           datasets: [{

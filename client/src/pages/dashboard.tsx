@@ -8,6 +8,7 @@ import ActivityTable from "@/components/dashboard/activity-table";
 import MatchingStatus from "@/components/dashboard/matching-status";
 import AiMatches from "@/components/dashboard/ai-matches";
 import SecurityCard from "@/components/dashboard/security-card";
+import { Transaction, Match } from "../../../shared/schema";
 
 export default function Dashboard() {
   // Get Web3 context
@@ -28,25 +29,36 @@ export default function Dashboard() {
     queryKey: ['/api/statistics'],
   });
 
+  // Define types for our data
+  type Statistics = {
+    totalDonors: number;
+    pendingRequests: number;
+    successfulMatches: number;
+    aiMatchRate: number;
+    organTypeDistribution: {
+      labels: string[];
+      values: number[];
+    };
+    regionalDistribution: {
+      labels: string[];
+      values: number[];
+    };
+  };
+  
   // Default statistics for handling API errors
-  const defaultStats = {
+  const defaultStats: Statistics = {
     totalDonors: 45,
     pendingRequests: 12,
     successfulMatches: 28,
     aiMatchRate: 72.5,
-    organTypeDistribution: [
-      { label: 'Kidney', value: 35 },
-      { label: 'Liver', value: 25 },
-      { label: 'Heart', value: 15 },
-      { label: 'Lungs', value: 10 },
-      { label: 'Cornea', value: 15 }
-    ],
-    regionalDistribution: [
-      { label: 'North', value: 30 },
-      { label: 'South', value: 25 },
-      { label: 'East', value: 20 },
-      { label: 'West', value: 25 }
-    ]
+    organTypeDistribution: {
+      labels: ['Kidney', 'Liver', 'Heart', 'Lungs', 'Cornea'],
+      values: [35, 25, 15, 10, 15]
+    },
+    regionalDistribution: {
+      labels: ['North', 'South', 'East', 'West'],
+      values: [30, 25, 20, 25]
+    }
   };
 
   // Get recent transactions
@@ -114,9 +126,9 @@ export default function Dashboard() {
   ];
   
   // Ensure we have default data if APIs fail
-  const safeStats = stats || defaultStats;
-  const safeTransactions = transactions || defaultTransactions;
-  const safeAiMatches = aiMatches || defaultAiMatches;
+  const safeStats: Statistics = stats || defaultStats;
+  const safeTransactions: Transaction[] = transactions || defaultTransactions;
+  const safeAiMatches: Match[] = aiMatches || defaultAiMatches;
 
   const aiModel = {
     accuracy: "93.7%",
