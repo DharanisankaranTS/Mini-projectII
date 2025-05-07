@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle2, XCircle, ArrowRightCircle, Filter, Users } from "lucide-react";
+import { MatchAccuracyChart } from "@/components/matching/match-accuracy-chart";
 
 export default function Matching() {
   const [selectedMatch, setSelectedMatch] = useState<any>(null);
@@ -303,50 +304,23 @@ export default function Matching() {
                   </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
-                  <h3 className="text-lg font-medium">Compatibility Analysis</h3>
-                  <div className="rounded-lg border p-4">
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm font-medium">Overall Compatibility</span>
-                          <span className="text-sm font-medium">{selectedMatch.compatibilityScore}%</span>
-                        </div>
-                        <Progress value={selectedMatch.compatibilityScore} className="h-2" />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm">Blood Compatibility</span>
-                            <span>95%</span>
-                          </div>
-                          <Progress value={95} className="h-1.5" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm">Tissue Matching</span>
-                            <span>87%</span>
-                          </div>
-                          <Progress value={87} className="h-1.5" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="text-sm">Age Factors</span>
-                            <span>76%</span>
-                          </div>
-                          <Progress value={76} className="h-1.5" />
-                        </div>
-                      </div>
-
-                      <div className="pt-2 border-t">
-                        <h4 className="text-sm font-medium mb-2">AI Analysis Notes</h4>
-                        <p className="text-sm text-muted-foreground">
-                          This match shows high compatibility in primary factors. Blood type is a direct match, and tissue cross-matching indicates minimal rejection risk. Geographic proximity is optimal (same region). The AI model gives this match a high success probability based on historical outcomes of similar profiles.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                {/* Advanced Graphical Visualization of Matching Accuracy */}
+                <div className="md:col-span-2">
+                  <MatchAccuracyChart 
+                    matchData={{
+                      ...selectedMatch,
+                      bloodTypeScore: 95,
+                      tissueMatchScore: 87,
+                      ageScore: 76,
+                      geographicScore: 89,
+                      waitTimeScore: 72,
+                      medicalHistoryScore: 84,
+                      successProbability: 92,
+                      ageDifference: 8,
+                      distance: 25,
+                      weightRatio: 0.95
+                    }}
+                  />
                 </div>
               </div>
 
