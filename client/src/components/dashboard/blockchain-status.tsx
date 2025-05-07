@@ -32,7 +32,10 @@ export default function BlockchainStatus() {
             </span>
           </div>
         </div>
-        <button className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center">
+        <button 
+          onClick={() => window.open('https://etherscan.io', '_blank')}
+          className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center cursor-pointer"
+        >
           View Details
           <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
