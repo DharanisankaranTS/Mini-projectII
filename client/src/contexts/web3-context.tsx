@@ -33,31 +33,35 @@ interface Web3ProviderProps {
 }
 
 export function Web3Provider({ children }: Web3ProviderProps) {
-  const [isConnected, setIsConnected] = useState(false);
-  const [account, setAccount] = useState<string | null>(null);
+  // Initialize with connected state for better user experience
+  const [isConnected, setIsConnected] = useState(true);
+  const [account, setAccount] = useState<string | null>("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
   const [currentBlock, setCurrentBlock] = useState(12345678);
   const { toast } = useToast();
   
-  // Auto-connect on application start
+  // Auto-connect on application start - in a real app this would check for a real provider
   useEffect(() => {
-    const autoConnect = async () => {
-      try {
-        console.log("Auto-connecting to blockchain...");
-        // Use a mock address
-        const mockAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-      
-        // Update state
-        setAccount(mockAddress);
-        setIsConnected(true);
+    // Just verify our state is set
+    if (!isConnected || !account) {
+      const autoConnect = async () => {
+        try {
+          console.log("Auto-connecting to blockchain...");
+          // Use a mock address
+          const mockAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
         
-        console.log("Auto-connected successfully to", mockAddress);
-      } catch (error) {
-        console.error("Failed to auto-connect:", error);
-      }
-    };
-    
-    autoConnect();
-  }, []);
+          // Update state
+          setAccount(mockAddress);
+          setIsConnected(true);
+          
+          console.log("Auto-connected successfully to", mockAddress);
+        } catch (error) {
+          console.error("Failed to auto-connect:", error);
+        }
+      };
+      
+      autoConnect();
+    }
+  }, [isConnected, account]);
   
   // Block number simulation
   useEffect(() => {

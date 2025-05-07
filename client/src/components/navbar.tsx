@@ -13,7 +13,11 @@ export function Navbar() {
   });
   
   // Use our Web3 context
-  const { isConnected, connect, disconnect } = useWeb3();
+  const web3Context = useWeb3();
+  const { isConnected, connect, disconnect, account } = web3Context;
+  
+  // Debug web3 context values
+  console.log("Web3 context values in Navbar:", { isConnected, account });
 
   const navItems = [
     { href: "/", label: "Dashboard" },
