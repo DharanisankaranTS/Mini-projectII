@@ -12,8 +12,8 @@ interface Web3ContextType {
 
 // Create context with default values
 const Web3Context = createContext<Web3ContextType>({
-  isConnected: false,
-  account: null,
+  isConnected: true, // Default to connected in this demo
+  account: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Default account
   currentBlock: 12345678,
   connect: async () => {},
   disconnect: () => {}
@@ -41,27 +41,26 @@ export function Web3Provider({ children }: Web3ProviderProps) {
   
   // Auto-connect on application start - in a real app this would check for a real provider
   useEffect(() => {
-    // Just verify our state is set
-    if (!isConnected || !account) {
-      const autoConnect = async () => {
-        try {
-          console.log("Auto-connecting to blockchain...");
-          // Use a mock address
-          const mockAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-        
-          // Update state
-          setAccount(mockAddress);
-          setIsConnected(true);
-          
-          console.log("Auto-connected successfully to", mockAddress);
-        } catch (error) {
-          console.error("Failed to auto-connect:", error);
-        }
-      };
+    // Always connect on component mount
+    const autoConnect = async () => {
+      try {
+        console.log("Auto-connecting to blockchain...");
+        // Use a mock address
+        const mockAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
       
-      autoConnect();
-    }
-  }, [isConnected, account]);
+        // Update state and ensure they're set to connected
+        setAccount(mockAddress);
+        setIsConnected(true);
+        
+        console.log("Auto-connected successfully to", mockAddress);
+      } catch (error) {
+        console.error("Failed to auto-connect:", error);
+      }
+    };
+    
+    // Always run autoConnect on component mount
+    autoConnect();
+  }, []);
   
   // Block number simulation
   useEffect(() => {
