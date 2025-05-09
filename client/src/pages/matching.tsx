@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,14 +10,155 @@ import { Progress } from "@/components/ui/progress";
 import { AlertCircle, CheckCircle2, XCircle, ArrowRightCircle, Filter, Users } from "lucide-react";
 import { MatchAccuracyChart } from "@/components/matching/match-accuracy-chart";
 
+// Define types for our data structures
+interface Donor {
+  id: number;
+  name: string;
+  bloodType: string;
+  dateOfBirth: string;
+}
+
+interface Recipient {
+  id: number;
+  name: string;
+  bloodType: string;
+  organNeeded: string;
+  urgencyLevel: number;
+}
+
+interface Match {
+  id: number;
+  donor: Donor;
+  recipient: Recipient;
+  organType: string;
+  compatibilityScore: number;
+  status: string;
+  createdAt: string;
+  approvedAt?: string;
+  completedAt?: string;
+  outcome?: string;
+}
+
 export default function Matching() {
-  const [selectedMatch, setSelectedMatch] = useState<any>(null);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   // Fetch matches
-  const { data: matches, isLoading } = useQuery({
+  const { data: fetchedMatches, isLoading } = useQuery<Match[]>({
     queryKey: ['/api/matches'],
   });
+  
+  // Sample mock data for demonstration when no real data is available
+  const mockMatches: Match[] = [
+    {
+      id: 1001,
+      donor: {
+        id: 101,
+        name: "John Smith",
+        bloodType: "A+",
+        dateOfBirth: new Date("1985-03-12").toISOString(),
+      },
+      recipient: {
+        id: 201,
+        name: "Emma Johnson",
+        bloodType: "A-",
+        organNeeded: "kidney",
+        urgencyLevel: 8
+      },
+      organType: "kidney",
+      compatibilityScore: 92,
+      status: "pending",
+      createdAt: new Date("2025-05-01").toISOString()
+    },
+    {
+      id: 1002,
+      donor: {
+        id: 102,
+        name: "Michael Brown",
+        bloodType: "O+",
+        dateOfBirth: new Date("1990-07-24").toISOString(),
+      },
+      recipient: {
+        id: 202,
+        name: "Sarah Williams",
+        bloodType: "O+",
+        organNeeded: "liver",
+        urgencyLevel: 6
+      },
+      organType: "liver",
+      compatibilityScore: 89,
+      status: "approved",
+      createdAt: new Date("2025-04-28").toISOString()
+    },
+    {
+      id: 1003,
+      donor: {
+        id: 103,
+        name: "David Garcia",
+        bloodType: "B+",
+        dateOfBirth: new Date("1978-11-03").toISOString(),
+      },
+      recipient: {
+        id: 203,
+        name: "Jennifer Martinez",
+        bloodType: "B-",
+        organNeeded: "heart",
+        urgencyLevel: 9
+      },
+      organType: "heart",
+      compatibilityScore: 85,
+      status: "completed",
+      createdAt: new Date("2025-04-15").toISOString()
+    },
+    {
+      id: 1004,
+      donor: {
+        id: 104,
+        name: "Lisa Anderson",
+        bloodType: "AB+",
+        dateOfBirth: new Date("1982-09-17").toISOString(),
+      },
+      recipient: {
+        id: 204,
+        name: "Robert Wilson",
+        bloodType: "AB+",
+        organNeeded: "lung",
+        urgencyLevel: 7
+      },
+      organType: "lung",
+      compatibilityScore: 95,
+      status: "pending",
+      createdAt: new Date("2025-05-03").toISOString()
+    },
+    {
+      id: 1005,
+      donor: {
+        id: 105,
+        name: "James Taylor",
+        bloodType: "O-",
+        dateOfBirth: new Date("1988-02-28").toISOString(),
+      },
+      recipient: {
+        id: 205,
+        name: "Patricia Moore",
+        bloodType: "O-",
+        organNeeded: "kidney",
+        urgencyLevel: 5
+      },
+      organType: "kidney",
+      compatibilityScore: 98,
+      status: "approved",
+      createdAt: new Date("2025-04-22").toISOString()
+    }
+  ];
+  
+  // Use mockMatches if no real data is available
+  const matches: Match[] = (fetchedMatches && fetchedMatches.length > 0) ? fetchedMatches : mockMatches;
+  
+  // Filter matches by status for different tabs
+  const pendingMatches = matches.filter((match: Match) => match.status.toLowerCase() === "pending");
+  const approvedMatches = matches.filter((match: Match) => match.status.toLowerCase() === "approved");
+  const completedMatches = matches.filter((match: Match) => match.status.toLowerCase() === "completed");
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
@@ -173,7 +314,7 @@ export default function Matching() {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      matches?.map((match: any) => (
+                      matches.map((match: Match) => (
                         <TableRow key={match.id}>
                           <TableCell className="font-mono text-xs">M-{match.id.toString().padStart(6, '0')}</TableCell>
                           <TableCell>
@@ -213,8 +354,83 @@ export default function Matching() {
         <TabsContent value="pending" className="mt-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-10 text-muted-foreground">
-                Loading pending matches...
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Match ID</TableHead>
+                      <TableHead>Donor Info</TableHead>
+                      <TableHead>Recipient Info</TableHead>
+                      <TableHead>Organ Type</TableHead>
+                      <TableHead>Compatibility</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead>Urgency</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          Loading pending matches...
+                        </TableCell>
+                      </TableRow>
+                    ) : pendingMatches.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          No pending matches found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pendingMatches.map((match: Match) => (
+                        <TableRow key={match.id}>
+                          <TableCell className="font-mono text-xs">M-{match.id.toString().padStart(6, '0')}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.donor.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.donor.bloodType}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.recipient.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.recipient.bloodType}</div>
+                          </TableCell>
+                          <TableCell className="capitalize">{match.organType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center justify-center h-8 w-16 rounded-full ${getCompatibilityColor(match.compatibilityScore)}`}>
+                              {match.compatibilityScore}%
+                            </span>
+                          </TableCell>
+                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={match.recipient.urgencyLevel >= 7 ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"}>
+                              Level {match.recipient.urgencyLevel}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  setSelectedMatch(match);
+                                  setDetailsOpen(true);
+                                }}
+                              >
+                                View
+                              </Button>
+                              <Button 
+                                variant="default" 
+                                size="sm"
+                                className="bg-primary-600 hover:bg-primary-700"
+                              >
+                                Approve
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
@@ -223,8 +439,77 @@ export default function Matching() {
         <TabsContent value="approved" className="mt-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-10 text-muted-foreground">
-                Loading approved matches...
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Match ID</TableHead>
+                      <TableHead>Donor Info</TableHead>
+                      <TableHead>Recipient Info</TableHead>
+                      <TableHead>Organ Type</TableHead>
+                      <TableHead>Compatibility</TableHead>
+                      <TableHead>Approved Date</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-4">
+                          Loading approved matches...
+                        </TableCell>
+                      </TableRow>
+                    ) : approvedMatches.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-4">
+                          No approved matches found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      approvedMatches.map((match: Match) => (
+                        <TableRow key={match.id}>
+                          <TableCell className="font-mono text-xs">M-{match.id.toString().padStart(6, '0')}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.donor.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.donor.bloodType}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.recipient.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.recipient.bloodType}</div>
+                          </TableCell>
+                          <TableCell className="capitalize">{match.organType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center justify-center h-8 w-16 rounded-full ${getCompatibilityColor(match.compatibilityScore)}`}>
+                              {match.compatibilityScore}%
+                            </span>
+                          </TableCell>
+                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end space-x-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => {
+                                  setSelectedMatch(match);
+                                  setDetailsOpen(true);
+                                }}
+                              >
+                                View
+                              </Button>
+                              <Button 
+                                variant="default" 
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                Proceed
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
@@ -233,8 +518,74 @@ export default function Matching() {
         <TabsContent value="completed" className="mt-4">
           <Card>
             <CardContent className="pt-6">
-              <div className="text-center py-10 text-muted-foreground">
-                Loading completed matches...
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Match ID</TableHead>
+                      <TableHead>Donor Info</TableHead>
+                      <TableHead>Recipient Info</TableHead>
+                      <TableHead>Organ Type</TableHead>
+                      <TableHead>Compatibility</TableHead>
+                      <TableHead>Completion Date</TableHead>
+                      <TableHead>Outcome</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          Loading completed matches...
+                        </TableCell>
+                      </TableRow>
+                    ) : completedMatches.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={8} className="text-center py-4">
+                          No completed matches found.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      completedMatches.map((match: Match) => (
+                        <TableRow key={match.id}>
+                          <TableCell className="font-mono text-xs">M-{match.id.toString().padStart(6, '0')}</TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.donor.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.donor.bloodType}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{match.recipient.name}</div>
+                            <div className="text-xs text-muted-foreground">{match.recipient.bloodType}</div>
+                          </TableCell>
+                          <TableCell className="capitalize">{match.organType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-flex items-center justify-center h-8 w-16 rounded-full ${getCompatibilityColor(match.compatibilityScore)}`}>
+                              {match.compatibilityScore}%
+                            </span>
+                          </TableCell>
+                          <TableCell>{new Date(match.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            <Badge className="bg-green-100 text-green-800">
+                              Successful
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => {
+                                setSelectedMatch(match);
+                                setDetailsOpen(true);
+                              }}
+                            >
+                              View Report
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </CardContent>
           </Card>
