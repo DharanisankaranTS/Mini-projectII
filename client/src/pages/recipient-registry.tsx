@@ -1,22 +1,30 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import RecipientForm from "@/components/forms/recipient-form";
-import { UserPlus, FileText, Search, AlertTriangle } from "lucide-react";
+import { UserPlus, FileText, Search, AlertTriangle, Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ImportDialog } from "@/components/import-dialog";
+import { ExportDialog } from "@/components/export-dialog";
 
 export default function RecipientRegistry() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch recipients list
   const { data: recipients, isLoading } = useQuery({
     queryKey: ['/api/recipients'],
   });
+  
+  // For refreshing data after import
+  const handleImportSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/recipients'] });
+  };
 
   const filteredRecipients = recipients?.filter((recipient: any) => {
     if (!searchTerm) return true;
