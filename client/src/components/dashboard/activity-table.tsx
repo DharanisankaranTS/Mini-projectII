@@ -165,7 +165,9 @@ export default function ActivityTable({ transactions, isLoading }: ActivityTable
                 transactions?.map((transaction) => (
                   <TableRow key={transaction.id} className="hover:bg-slate-50">
                     <TableCell className="font-mono text-sm text-slate-500">
-                      {transaction.txHash.substring(0, 6)}...{transaction.txHash.substring(transaction.txHash.length - 4)}
+                      {transaction.txHash ? 
+                        `${transaction.txHash.substring(0, 6)}...${transaction.txHash.substring(transaction.txHash.length - 4)}` : 
+                        `TX-${transaction.id}`}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
@@ -175,8 +177,16 @@ export default function ActivityTable({ transactions, isLoading }: ActivityTable
                             {getTypeLabel(transaction.type)}
                           </div>
                           <div className="text-sm text-slate-500">
-                            {transaction.details.organType && transaction.details.bloodType && `${transaction.details.organType}, Blood Type ${transaction.details.bloodType}`}
-                            {transaction.details.compatibility && `, ${transaction.details.compatibility}% compatibility`}
+                            {transaction.details ? (
+                              <>
+                                {transaction.details.organType && transaction.details.bloodType && 
+                                  `${transaction.details.organType}, Blood Type ${transaction.details.bloodType}`}
+                                {transaction.details.compatibility && 
+                                  `, ${transaction.details.compatibility}% compatibility`}
+                              </>
+                            ) : (
+                              `${getTypeLabel(transaction.type)}`
+                            )}
                           </div>
                         </div>
                       </div>
