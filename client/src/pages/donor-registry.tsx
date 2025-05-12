@@ -1,21 +1,29 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import DonorForm from "@/components/forms/donor-form";
-import { UserPlus, FileText, Search } from "lucide-react";
+import { UserPlus, FileText, Search, Download, Upload } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ImportDialog } from "@/components/import-dialog";
+import { ExportDialog } from "@/components/export-dialog";
 
 export default function DonorRegistry() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const queryClient = useQueryClient();
 
   // Fetch donors list
   const { data: donors, isLoading } = useQuery({
     queryKey: ['/api/donors'],
   });
+  
+  // For refreshing data after import
+  const handleImportSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['/api/donors'] });
+  };
 
   const filteredDonors = donors?.filter((donor: any) => {
     if (!searchTerm) return true;
@@ -31,10 +39,14 @@ export default function DonorRegistry() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-bold text-slate-900">Donor Registry</h1>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Register New Donor
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportDialog onImportSuccess={handleImportSuccess} />
+          <ExportDialog donors={donors || []} />
+          <Button onClick={() => setIsFormOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Register New Donor
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="active" className="mb-6">

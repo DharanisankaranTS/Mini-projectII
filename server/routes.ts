@@ -76,6 +76,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json([]);
     }
   });
+  
+  // Import donors
+  app.post(`${apiPrefix}/donors/import`, async (req, res) => {
+    try {
+      const { data, overwrite } = req.body;
+      
+      if (!data || !Array.isArray(data)) {
+        return res.status(400).json({ message: 'Invalid import data. Expected array of donors.' });
+      }
+      
+      let importedCount = 0;
+      const importErrors = [];
+      
+      // Process each donor in the array
+      for (const donorData of data) {
+        try {
+          // Basic validation
+          if (!donorData.name || !donorData.organType || !donorData.bloodType) {
+            importErrors.push({ donor: donorData, error: 'Missing required fields' });
+            continue;
+          }
+          
+          // Convert data structure if needed - this handles different field naming conventions from various sources
+          const normalizedDonor = {
+            name: donorData.name || donorData.fullName || donorData.donorName,
+            email: donorData.email || donorData.emailAddress || `donor${Date.now()}@example.com`,
+            age: donorData.age || 0,
+            gender: donorData.gender || 'unknown',
+            bloodType: donorData.bloodType || donorData.blood_type || donorData.blood,
+            organType: donorData.organType || donorData.organ_type || donorData.organ,
+            medicalHistory: donorData.medicalHistory || donorData.medical_history || '',
+            location: donorData.location || donorData.region || donorData.city || '',
+            contactNumber: donorData.contactNumber || donorData.phone || donorData.phoneNumber || '',
+            walletAddress: donorData.walletAddress || donorData.wallet || donorData.ethereumAddress || `0x${Math.random().toString(16).substring(2, 42)}`,
+            status: donorData.status || 'pending',
+          };
+          
+          // Check if donor already exists (by email or wallet address)
+          const existingDonor = await db.query.donors.findFirst({
+            where: or(
+              eq(schema.donors.email, normalizedDonor.email),
+              eq(schema.donors.walletAddress, normalizedDonor.walletAddress)
+            )
+          });
+          
+          if (existingDonor) {
+            if (overwrite) {
+              // Update existing donor
+              await db.update(schema.donors)
+                .set(normalizedDonor)
+                .where(eq(schema.donors.id, existingDonor.id));
+              importedCount++;
+            } else {
+              importErrors.push({ donor: donorData, error: 'Donor already exists' });
+            }
+          } else {
+            // Insert new donor
+            await db.insert(schema.donors).values(normalizedDonor);
+            importedCount++;
+          }
+        } catch (error) {
+          console.error('Error importing donor:', error);
+          importErrors.push({ donor: donorData, error: 'Database error' });
+        }
+      }
+      
+      return res.json({
+        success: true,
+        importedCount,
+        errors: importErrors,
+        totalErrors: importErrors.length,
+        totalAttempted: data.length
+      });
+    } catch (error) {
+      console.error('Error in donor import endpoint:', error);
+      return res.status(500).json({ message: 'Import failed due to server error' });
+    }
+  });
 
   // Get donor by ID
   app.get(`${apiPrefix}/donors/:id`, async (req, res) => {
