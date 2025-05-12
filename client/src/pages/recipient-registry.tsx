@@ -59,10 +59,14 @@ export default function RecipientRegistry() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-heading font-bold text-slate-900">Recipient Registry</h1>
-        <Button onClick={() => setIsFormOpen(true)}>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Register New Recipient
-        </Button>
+        <div className="flex items-center gap-2">
+          <ImportDialog onImportSuccess={handleImportSuccess} />
+          <ExportDialog recipients={recipients || []} />
+          <Button onClick={() => setIsFormOpen(true)}>
+            <UserPlus className="mr-2 h-4 w-4" />
+            Register New Recipient
+          </Button>
+        </div>
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-6">
