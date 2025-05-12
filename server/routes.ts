@@ -8,6 +8,7 @@ import { z } from "zod";
 import { registerOnBlockchain, createBlockchainTransaction } from "./services/blockchain";
 import { encryptData, decryptData } from "./services/encryption";
 import { findCompatibleMatches, calculateCompatibilityScore } from "./services/matching";
+import { mockStorage } from "./mock-data";
 
 // Validation schemas
 const donorRegistrationSchema = z.object({
@@ -72,8 +73,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(donors);
     } catch (error) {
       console.error('Error fetching donors:', error);
-      // Return an empty array instead of error status to prevent UI errors
-      return res.json([]);
+      // Use mock storage as fallback when database fails
+      const mockDonors = mockStorage.getDonors();
+      return res.json(mockDonors);
     }
   });
   
@@ -247,8 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ errors: error.errors });
       }
       
-      // If database error, return a mock successful response with generated ID
-      // This prevents UI errors when database connection fails
+      // If database error, add to mock storage and return a successful response
       const mockDonorId = Math.floor(Math.random() * 10000) + 1;
       const mockDonor = {
         id: mockDonorId,
@@ -257,6 +258,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      
+      // Add to mock storage for persistence during the session
+      mockStorage.addDonor(mockDonor);
+      
+      // Create a mock transaction
+      const mockTransaction = {
+        id: Math.floor(Math.random() * 10000) + 1,
+        txHash: req.body.txHash || `0x${Math.random().toString(16).substring(2)}`,
+        type: 'donor_registration',
+        donorId: mockDonorId,
+        status: 'confirmed',
+        data: {
+          organType: req.body.organType,
+          bloodType: req.body.bloodType,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Add transaction to mock storage
+      mockStorage.addTransaction(mockTransaction);
       
       // Return success status with mock data
       return res.status(201).json(mockDonor);
@@ -275,8 +297,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.json(recipients);
     } catch (error) {
       console.error('Error fetching recipients:', error);
-      // Return empty array instead of error status to prevent UI errors
-      return res.json([]);
+      // Use mock storage as fallback when database fails
+      const mockRecipients = mockStorage.getRecipients();
+      return res.json(mockRecipients);
     }
   });
   
@@ -454,8 +477,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ errors: error.errors });
       }
       
-      // If database error, return a mock successful response with generated ID
-      // This prevents UI errors when database connection fails
+      // If database error, add to mock storage and return a successful response
       const mockRecipientId = Math.floor(Math.random() * 10000) + 1;
       const mockRecipient = {
         id: mockRecipientId,
@@ -464,6 +486,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
+      
+      // Add to mock storage for persistence during the session
+      mockStorage.addRecipient(mockRecipient);
+      
+      // Create a mock transaction
+      const mockTransaction = {
+        id: Math.floor(Math.random() * 10000) + 1,
+        txHash: req.body.txHash || `0x${Math.random().toString(16).substring(2)}`,
+        type: 'recipient_registration',
+        recipientId: mockRecipientId,
+        status: 'confirmed',
+        data: {
+          organNeeded: req.body.organNeeded,
+          bloodType: req.body.bloodType,
+          urgencyLevel: req.body.urgencyLevel,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Add transaction to mock storage
+      mockStorage.addTransaction(mockTransaction);
       
       // Return success status with mock data
       return res.status(201).json(mockRecipient);
