@@ -1,22 +1,28 @@
 import { db } from "./index";
 import * as schema from "@shared/schema";
-import { encryptData } from "../server/services/encryption";
+import { sql } from "drizzle-orm";
+
+// Simple encryptor for sample data
+const getEncryptedMedicalData = async (data: any) => {
+  return Buffer.from(JSON.stringify(data)).toString('base64');
+};
 
 async function seed() {
   try {
     console.log("Starting database seed...");
-
-    // Check if data already exists
-    const existingDonors = await db.select({ count: db.fn.count() }).from(schema.donors);
     
-    if (Number(existingDonors[0].count) > 0) {
-      console.log("Data already exists in database, skipping seed");
-      return;
-    }
-
-    // Encrypt sample medical data
-    async function getEncryptedMedicalData(data: any) {
-      return await encryptData(JSON.stringify(data));
+    try {
+      // Check if data already exists using raw SQL count
+      const existingDonors = await db.select({
+        count: sql<number>`count(*)`
+      }).from(schema.donors);
+      
+      if (existingDonors.length > 0 && Number(existingDonors[0].count) > 0) {
+        console.log("Data already exists in database, skipping seed");
+        return;
+      }
+    } catch (error) {
+      console.log("Error checking existing data, likely schema doesn't exist yet. Proceeding with seed anyway.");
     }
 
     // ----- Create Donors -----

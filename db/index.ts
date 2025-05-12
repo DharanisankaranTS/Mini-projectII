@@ -1,17 +1,16 @@
-import { Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
+import { neon, neonConfig } from '@neondatabase/serverless';
+import { drizzle } from 'drizzle-orm/neon-http';
+import ws from 'ws';
 import * as schema from "@shared/schema";
 
-// Use explicit connection parameters from environment variables
-export const pool = new Pool({
-  host: process.env.PGHOST,
-  port: Number(process.env.PGPORT),
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD,
-  database: process.env.PGDATABASE,
-  ssl: {
-    rejectUnauthorized: false // Allow self-signed certificates
-  }
-});
+// Set the WebSocket implementation for Neon
+neonConfig.webSocketConstructor = ws;
 
-export const db = drizzle(pool, { schema });
+// Debug information
+console.log("Connecting to database with URL starting with:", process.env.DATABASE_URL?.substring(0, 35) + "...");
+
+// Use the DATABASE_URL environment variable with direct password for testing
+const sql = neon(process.env.DATABASE_URL!);
+
+// Create the drizzle client
+export const db = drizzle(sql, { schema });
